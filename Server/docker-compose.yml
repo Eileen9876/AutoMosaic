@@ -1,0 +1,12 @@
+services:
+    face_recognition:
+        image: face_recognition
+        container_name: face_recognition
+        working_dir: /face_recognition
+        build:
+            context: https://github.com/ageitgey/face_recognition.git
+        ports:
+            - "8000:8000"  
+        volumes:
+            - ./Code/:/face_recognition
+        command: python3 main.py
