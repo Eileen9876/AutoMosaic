@@ -84,7 +84,6 @@ class RequestHandler:
         (10) 接收訊號「OK」，確認可開始傳送訊息。
         (11) 傳送處理結果的資料。
         '''
-        BUFFER_SIZE = 2
 
         try:
 
@@ -98,17 +97,17 @@ class RequestHandler:
 
             self.__Send("RECV_END")
 
-            RequestHandler.__CheckMessage(self.__Recv(BUFFER_SIZE), "OK")
+            RequestHandler.__CheckMessage(self.__Recv(2), "OK")
 
             result = RequestHandler.__ProcData(dataType, dataContent)
 
             self.__Send("PROC_END")
 
-            RequestHandler.__CheckMessage(self.__Recv(BUFFER_SIZE), "OK")
+            RequestHandler.__CheckMessage(self.__Recv(2), "OK")
 
             self.__Send(str(len(result)))
 
-            RequestHandler.__CheckMessage(self.__Recv(BUFFER_SIZE), "OK")
+            RequestHandler.__CheckMessage(self.__Recv(2), "OK")
 
             self.__Send(result)
 
@@ -124,7 +123,12 @@ class RequestHandler:
 
 
     def __Recv(self, size):
-        message = self.Socket.recv(size).decode()
+        msgBytes = b''
+        while len(msgBytes) < size:
+            buffer = self.Socket.recv(size - len(msgBytes))
+            msgBytes += buffer
+
+        message = msgBytes.decode()
 
         Log.LogInfo(f"Receive from {str(self.Address)} {message}")
 
@@ -133,7 +137,7 @@ class RequestHandler:
 
     def __GetDataType(self):
         # 返回資料類型與資料大小
-        message = self.__Recv(25)
+        message = self.Socket.recv(25).decode()
 
         data = message.split(" ")
 
